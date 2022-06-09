@@ -96,7 +96,7 @@ class PMPro_Approvals {
 		//Add code for filtering checkouts, confirmation, and content filters
 		add_filter( 'pmpro_non_member_text_filter', array( 'PMPro_Approvals', 'pmpro_non_member_text_filter' ) );
 		add_action( 'pmpro_account_bullets_top', array( 'PMPro_Approvals', 'pmpro_account_bullets_top' ) );
-		add_filter( 'pmpro_confirmation_message', array( 'PMPro_Approvals', 'pmpro_confirmation_message' ), 10, 2 );
+		//add_filter( 'pmpro_confirmation_message', array( 'PMPro_Approvals', 'pmpro_confirmation_message' ), 10, 2 );
 		add_action( 'pmpro_before_change_membership_level', array( 'PMPro_Approvals', 'pmpro_before_change_membership_level' ), 10, 2 );
 		add_action( 'pmpro_after_change_membership_level', array( 'PMPro_Approvals', 'pmpro_after_change_membership_level' ), 10, 2 );
 
@@ -151,13 +151,13 @@ class PMPro_Approvals {
 	 */
 	public static function admin_menu() {
 		global $menu, $submenu;
-		
+
 		if ( ! defined( 'PMPRO_VERSION' ) ) {
 			return;
 		}
 
 		$approval_menu_text = __( 'Approvals', 'pmpro-approvals' );
-		
+
 		$user_count = self::getApprovalCount();
 
 		if ( $user_count > 0 ) {
@@ -271,9 +271,9 @@ class PMPro_Approvals {
 		}
 
 		$options = self::getOptions( $level_id );
-		
+
 		$requires_approval = apply_filters( 'pmpro_approvals_level_requires_approval', $options['requires_approval'], $level_id);
-		
+
 		return $requires_approval;
 	}
 
@@ -313,7 +313,7 @@ class PMPro_Approvals {
 		?>
 		<h3 class="topborder"><?php _e( 'Approval Settings', 'pmpro-approvals' ); ?></h3>
 		<table>
-		<tbody class="form-table">			
+		<tbody class="form-table">
 			<tr>
 				<th scope="row" valign="top"><label for="approval_setting"><?php _e( 'Requires Approval?', 'pmpro-approvals' ); ?></label></th>
 				<td>
@@ -324,18 +324,18 @@ class PMPro_Approvals {
 							<option value="2" <?php selected( $approval_setting, 2 ); ?>><?php _e( 'Yes. User must have an approved membership for a different level.', 'pmpro-approvals' ); ?></option>
 							<option value="3" <?php selected( $approval_setting, 3 ); ?>><?php _e( 'Yes. User must have an approved membership for a different level AND admin must approve new members for this level.', 'pmpro-approvals' ); ?></option>
 						<?php } ?>
-					</select>								
+					</select>
 				</td>
 			</tr>
 			<?php if ( ! empty( $levels ) ) { ?>
-			<tr 
+			<tr
 			<?php
 			if ( $approval_setting < 2 ) {
 	?>
  style="display: none;"<?php } ?>>
 				<th scope="row" valign="top"><label for="approval_restrict_level"><?php _e( 'Which Level?', 'pmpro-approvals' ); ?></label></th>
 				<td>
-					<select id="approval_restrict_level" name="approval_restrict_level">					
+					<select id="approval_restrict_level" name="approval_restrict_level">
 					<?php
 					foreach ( $levels as $level ) {
 						?>
@@ -357,10 +357,10 @@ class PMPro_Approvals {
 					else
 						jQuery('#approval_restrict_level').closest('tr').hide();
 				}
-				
+
 				//bind to approval setting change
 				jQuery('#approval_setting').change(function() { pmproap_toggleWhichLevel(); });
-				
+
 				//run on load
 				pmproap_toggleWhichLevel();
 			});
@@ -476,7 +476,7 @@ class PMPro_Approvals {
 
 			// Ignore if on the edit user screen. This will allow admins/users to update custom fields.
 			$current_screen = get_current_screen();
-			
+
 			if ( !empty( $current_screen ) && ( $current_screen->base == 'user-edit' || $current_screen->base == 'profile' ) ) {
 				return $haslevel;
 			}
@@ -603,11 +603,11 @@ class PMPro_Approvals {
 		//get the PMPro level for the user
 		if ( empty( $level_id ) ) {
 			$level    = pmpro_getMembershipLevelForUser( $user_id );
-			
+
 			if ( ! empty( $level ) ) {
 				$level_id = $level->ID;
 			}
-			
+
 		} else {
 			$level = pmpro_getLevel( $level_id );
 		}
@@ -879,7 +879,7 @@ class PMPro_Approvals {
 				'approver'  => $current_user->user_login,
 			)
 		);
-		
+
 		//delete the approval count cache
 		delete_transient( 'pmpro_approvals_approval_count' );
 
@@ -981,7 +981,7 @@ class PMPro_Approvals {
 				'approver'  => '',
 			)
 		);
-		
+
 		//delete the approval count cache
 		delete_transient( 'pmpro_approvals_approval_count' );
 
@@ -1030,7 +1030,7 @@ class PMPro_Approvals {
 				'approver'  => '',
 			)
 		);
-		
+
 		//delete the approval count cache
 		delete_transient( 'pmpro_approvals_approval_count' );
 	}
@@ -1043,7 +1043,7 @@ class PMPro_Approvals {
 		//check if level requires approval, if not stop executing this function and don't send email.
 		if ( ! self::requiresApproval( $level_id ) ) {
 			return;
-		}		
+		}
 
 		//send email to admin that a new member requires approval.
 		$email = new PMPro_Approvals_Email();
@@ -1228,60 +1228,55 @@ class PMPro_Approvals {
 	//Approve members from edit profile in WordPress.
 	public static function show_user_profile_status( $user ) {
 
-		//get some info about the user's level
-		if ( isset( $_REQUEST['membership_level'] ) ) {
-			$level_id = intval( $_REQUEST['membership_level'] );
-			$level    = pmpro_getLevel( $level_id );
-		} else {
-			$level = pmpro_getMembershipLevelForUser( $user->ID );
-			if ( ! empty( $level ) ) {
-				$level_id = $level->id;
-			} else {
-				$level_id = null;
-			}
-		}
-
 		//process any approve/deny/reset click
 		if ( current_user_can( 'pmpro_approvals' ) ) {
 			if ( ! empty( $_REQUEST['approve'] ) ) {
-				self::approveMember( intval( $_REQUEST['approve'] ), $level_id );
+				self::approveMember( intval( $_REQUEST['approve'] ), intval( $_REQUEST['level_id'] ) );
 			} elseif ( ! empty( $_REQUEST['deny'] ) ) {
-				self::denyMember( intval( $_REQUEST['deny'] ), $level_id );
+				self::denyMember( intval( $_REQUEST['deny'] ), intval( $_REQUEST['level_id'] ) );
 			} elseif ( ! empty( $_REQUEST['unapprove'] ) ) {
-				self::resetMember( intval( $_REQUEST['unapprove'] ), $level_id );
+				self::resetMember( intval( $_REQUEST['unapprove'] ), intval( $_REQUEST['level_id'] ) );
 			}
 		}
 
-		//show info
-		?>
-		<table id="pmpro_approvals_status_table" class="form-table">
-			<tr>
-				<th><?php _e( 'Approval Status', 'pmpro-approvals' ); ?></th>
+		//get some info about the user's level
+		$levels = pmpro_getMembershipLevelsForUser( $user->ID );
+		foreach ($levels as $level) {
+			$level_id = $level->ID;
 
-				<td>
-					<span id="pmpro_approvals_status_text">
-						<?php echo self::getUserApprovalStatus( $user->ID, null, false ); ?>
-					</span>
-					<?php if ( current_user_can( 'pmpro_approvals' ) ) { ?>
-					<span id="pmpro_approvals_reset_link" 
-					<?php
-					if ( self::isPending( $user->ID, $level_id ) ) {
-?>
-style="display: none;"<?php } ?>>
-						[<a href="javascript:askfirst('Are you sure you want to reset approval for <?php echo $user->user_login; ?>?', '?&user_id=<?php echo $user->ID; ?>&unapprove=<?php echo $user->ID; ?>');">X</a>]
-					</span>
-					<span id="pmpro_approvals_approve_deny_links" 
-					<?php
-					if ( ! self::isPending( $user->ID, $level_id ) ) {
-?>
-style="display: none;"<?php } ?>>
-						<a href="?user_id=<?php echo $user->ID; ?>&approve=<?php echo $user->ID; ?>">Approve</a> |
-						<a href="?user_id=<?php echo $user->ID; ?>&deny=<?php echo $user->ID; ?>">Deny</a>
-					</span>
-					<?php } ?>
-				</td>
-			</tr>
-			<?php
+			//show info
+			?>
+			<table id="pmpro_approvals_status_table" class="form-table">
+				<tr>
+					<th><?php _e( 'Approval Status', 'pmpro-approvals' ); ?></th>
+				</tr>
+				<tr>
+					<td>
+						<span id="pmpro_approvals_status_text">
+							<?php echo self::getUserApprovalStatus( $user->ID, $level_id, false ); ?>
+						</span>
+						<?php if ( current_user_can( 'pmpro_approvals' ) ) { ?>
+						<span id="pmpro_approvals_reset_link"
+						<?php
+						if ( self::isPending( $user->ID, $level_id ) ) {
+	?>
+	style="display: none;"<?php } ?>>
+							[<a href="javascript:askfirst('Are you sure you want to reset approval for <?php echo $user->user_login; ?>?', '?&user_id=<?php echo $user->ID; ?>&unapprove=<?php echo $user->ID; ?>&level_id=<?php echo $level_id; ?>');">X</a>]
+						</span>
+						<span id="pmpro_approvals_approve_deny_links"
+						<?php
+						if ( ! self::isPending( $user->ID, $level_id ) ) {
+	?>
+	style="display: none;"<?php } ?>>
+							<a href="?user_id=<?php echo $user->ID; ?>&approve=<?php echo $user->ID; ?>&level_id=<?php echo $level_id; ?>">Approve</a> |
+							<a href="?user_id=<?php echo $user->ID; ?>&deny=<?php echo $user->ID; ?>&level_id=<?php echo $level_id; ?>">Deny</a>
+						</span>
+						<?php } ?>
+					</td>
+				</tr>
+				<?php
+		}
+
 			//only show user approval log if user can edit or has pmpro_approvals.
 			if ( current_user_can( 'edit_users' ) || current_user_can( 'pmpro_approvals' ) ) {
 			?>
@@ -1300,16 +1295,16 @@ style="display: none;"<?php } ?>>
 			var pmpro_approval_levels = <?php echo json_encode( self::getApprovalLevels() ); ?>;
 			var pmpro_approval_user_status_per_level = <?php echo json_encode( self::getUserApprovalStatuses( $user->ID, true ) ); ?>;
 			var pmpro_approval_user_status_full_per_level = <?php echo json_encode( self::getUserApprovalStatuses( $user->ID ) ); ?>;
-			
+
 			function pmpro_approval_updateApprovalStatus() {
 				//get the level from the dropdown
 				var olevel = <?php echo json_encode( $level_id ); ?>;
 				var level = jQuery('[name=membership_level]').val();
-				
+
 				//no level field, default to the user's level id
 				if(typeof(level) === 'undefined')
 					level = olevel;
-				
+
 				//if no level, hide it
 				if(level == '') {
 					//no level, so hide everything
@@ -1318,15 +1313,15 @@ style="display: none;"<?php } ?>>
 					//show the field, but hide the actions
 					jQuery('#pmpro_approvals_reset_link').hide();
 					jQuery('#pmpro_approvals_approve_deny_links').hide();
-					
+
 					jQuery('#pmpro_approvals_status_text').html(<?php echo json_encode( __( 'The chosen level does not require approval.', 'pmpro-approvals' ) ); ?>);
-					
+
 					jQuery('#pmpro_approvals_status_table').show();
 				} else {
 					//show the status and action links
 					jQuery('#pmpro_approvals_status_text').html(pmpro_approval_user_status_full_per_level[level]);
 					jQuery('#pmpro_approvals_status_table').show();
-					
+
 					if(level == olevel) {
 						if(pmpro_approval_user_status_per_level[level] == 'pending') {
 							jQuery('#pmpro_approvals_reset_link').hide();
@@ -1339,12 +1334,12 @@ style="display: none;"<?php } ?>>
 						jQuery('#pmpro_approvals_reset_link').hide();
 						jQuery('#pmpro_approvals_approve_deny_links').hide();
 					}
-				}				
+				}
 			}
-			
+
 			//update approval status when the membership level select changes
 			jQuery('[name=membership_level]').change(function(){pmpro_approval_updateApprovalStatus();});
-			
+
 			//call this once on load just in case
 			pmpro_approval_updateApprovalStatus();
 		</script>
@@ -1424,28 +1419,28 @@ style="display: none;"<?php } ?>>
 		}
 
 		// Check for a cached value in the transient.
-		$number_of_users = get_transient( 'pmpro_approvals_approval_count' );	
-		
+		$number_of_users = get_transient( 'pmpro_approvals_approval_count' );
+
 		// Store results in an array to support different statuses.
 		if ( ! isset( $number_of_users ) ) {
 			$number_of_users = array();
 		}
-		
+
 		// If we don't have this value yet, get it.
 		if ( ! isset( $number_of_users[$approval_status] ) ) {
-			//get all users with 'pending' status.	
+			//get all users with 'pending' status.
 			$sqlQuery = $wpdb->prepare( "SELECT COUNT(mu.user_id) as count
 										 FROM $wpdb->pmpro_memberships_users mu
 											LEFT JOIN $wpdb->usermeta um
 												ON um.user_id = mu.user_id
-													AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id) 
+													AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id)
 										 WHERE mu.status = 'active'
 											AND mu.membership_id > 0
 											AND um.meta_value LIKE '%s'", '%' . $approval_status . '%' );
 
 			$results         = $wpdb->get_results( $sqlQuery );
 			$number_of_users[$approval_status] = (int) $results[0]->count;
-			
+
 			set_transient( 'pmpro_approvals_approval_count', $number_of_users, 3600*24 );
 		}
 
@@ -1536,7 +1531,7 @@ style="display: none;"<?php } ?>>
 	}
 
 	/**
-	 * Change "Your Level" to "Awaiting Approval" in these instances for pending users. 
+	 * Change "Your Level" to "Awaiting Approval" in these instances for pending users.
 	 * @since 1.3
 	 */
 	public static function change_your_level_text( $translated_text, $text, $domain ) {
