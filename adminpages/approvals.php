@@ -155,7 +155,9 @@ selected="selected"<?php } ?>><?php _e( 'All Levels', 'pmpro-approvals' ); ?></o
 				<th><?php _e( 'Name', 'pmpro-approvals' ); ?></th>				
 				<th><?php _e( 'Email', 'pmpro-approvals' ); ?></th>
 				<?php do_action( 'pmpro_approvals_list_extra_cols_header', $theusers ); ?>
-				<th><?php _e( 'Membership', 'pmpro-approvals' ); ?></th>					
+				<th><?php _e( 'Membership', 'pmpro-approvals' ); ?></th>
+                <th><?php _e( 'Role', 'pmpro-approvals' ); ?></th>
+                <th><?php _e( 'Organization', 'pmpro-approvals' ); ?></th>
 				<th><?php _e( 'Approval Status', 'pmpro-approvals' ); ?></th>
 				<th><a href="<?php echo admin_url( 'admin.php?page=pmpro-approvals&s=' . esc_attr( $s ) . '&limit=' . $limit . '&pn=' . $pn . '&sortby=user_registered' ); ?>
 										<?php
@@ -210,7 +212,17 @@ class="alternate"<?php } ?>>
 								<?php
 								echo $auser->membership;
 								?>
-							</td>						
+							</td>
+                            <td>
+                                <?php
+                                    echo $auser->role;
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                echo $auser->org;
+                                ?>
+                            </td>
 							<td>										
 								<?php
 								$pmpro_approvals_nonce = wp_create_nonce( 'pmpro_approvals' );
