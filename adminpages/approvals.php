@@ -265,28 +265,28 @@ selected="selected"<?php } ?>><?php _e( 'All Levels', 'pmpro-approvals' ); ?></o
                     <?php
                     $pmpro_approvals_nonce = wp_create_nonce( 'pmpro_approvals' );
 
-								if ( PMPro_Approvals::isApproved( $theuser->ID ) || PMPro_Approvals::isDenied( $theuser->ID ) ) {
+                    if ( PMPro_Approvals::isApproved( $theuser->ID, $auser->membership_id ) || PMPro_Approvals::isDenied( $theuser->ID, $auser->membership_id ) ) {
 
-									if ( ! PMPro_Approvals::getEmailConfirmation( $theuser->ID ) ) {
-										_e( 'Email Confirmation Required.', 'pmpro-approvals' );
-									} else {
+                        if ( ! PMPro_Approvals::getEmailConfirmation( $theuser->ID ) ) {
+                            _e( 'Email Confirmation Required.', 'pmpro-approvals' );
+                        } else {
 
-										echo PMPro_Approvals::getUserApprovalStatus( $theuser->ID, $theuser->membership_level->id, false );
+                            echo PMPro_Approvals::getUserApprovalStatus( $theuser->ID, $auser->membership_id, false );
 
-										//link to unapprove
-										?>
-										[<a href="javascript:askfirst('Are you sure you want to reset approval for <?php echo $theuser->user_login; ?>?', '?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $l; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&unapprove=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>');">X</a>]
-										<?php
-									}
-								} else {
-									?>
+                            //link to unapprove
+                            ?>
+                            [<a href="javascript:askfirst('Are you sure you want to reset approval for <?php echo $theuser->user_login; ?>?', '?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $auser->membership_id; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&unapprove=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>');">X</a>]
+                            <?php
+                        }
+                    } else {
+                        ?>
 
-									<a href="?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $l; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&approve=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>"><?php _e('Approve', 'pmpro-approvals') ?></a> |
-									<a href="?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $l; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&deny=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>"><?php _e('Deny', 'pmpro-approvals') ?></a>
-									<?php
-								}
-								?>
-							</td>
+                        <a href="?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $auser->membership_id; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&approve=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>"><?php _e('Approve', 'pmpro-approvals') ?></a> |
+                        <a href="?page=pmpro-approvals&s=<?php echo esc_attr( $s ); ?>&l=<?php echo $auser->membership_id; ?>&limit=<?php echo intval( $limit ); ?>&status=<?php echo $status; ?>&sortby=<?php echo $sortby; ?>&sortorder=<?php echo $sortorder; ?>&pn=<?php echo intval( $pn ); ?>&deny=<?php echo $theuser->ID; ?>&pmpro_approvals_nonce=<?php echo urlencode( $pmpro_approvals_nonce ); ?>"><?php _e('Deny', 'pmpro-approvals') ?></a>
+                        <?php
+                    }
+                    ?>
+                </td>
 							<td><?php echo date_i18n( get_option( 'date_format' ), strtotime( $theuser->user_registered ) ); ?></td>
 						</tr>
 					<?php
