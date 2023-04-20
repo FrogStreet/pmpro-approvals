@@ -96,7 +96,7 @@ class PMPro_Approvals {
 		//Add code for filtering checkouts, confirmation, and content filters
 		add_filter( 'pmpro_non_member_text_filter', array( 'PMPro_Approvals', 'pmpro_non_member_text_filter' ) );
 		add_action( 'pmpro_account_bullets_top', array( 'PMPro_Approvals', 'pmpro_account_bullets_top' ) );
-		add_filter( 'pmpro_confirmation_message', array( 'PMPro_Approvals', 'pmpro_confirmation_message' ) );
+		add_filter( 'pmpro_confirmation_message', array( 'PMPro_Approvals', 'pmpro_confirmation_message' ), 10, 2 );
 		add_action( 'pmpro_before_change_membership_level', array( 'PMPro_Approvals', 'pmpro_before_change_membership_level' ), 10, 2 );
 		add_action( 'pmpro_after_change_membership_level', array( 'PMPro_Approvals', 'pmpro_after_change_membership_level' ), 10, 2 );
 
@@ -811,11 +811,14 @@ class PMPro_Approvals {
 		$end   = $pn * $limit;
 		$start = $end - $limit;
 
-		$sqlQuery = "SELECT SQL_CALC_FOUND_ROWS u.ID, u.user_login, u.user_email, UNIX_TIMESTAMP(u.user_registered) as joindate, mu.membership_id, mu.initial_payment, mu.billing_amount, mu.cycle_period, mu.cycle_number, mu.billing_limit, mu.trial_amount, mu.trial_limit, UNIX_TIMESTAMP(mu.startdate) as startdate, UNIX_TIMESTAMP(mu.enddate) as enddate, m.name as membership FROM $wpdb->users u LEFT JOIN $wpdb->pmpro_memberships_users mu ON u.ID = mu.user_id LEFT JOIN $wpdb->pmpro_membership_levels m ON mu.membership_id = m.id ";
+        $sqlQuery = "SELECT SQL_CALC_FOUND_ROWS u.ID, u.user_login, u.user_email, UNIX_TIMESTAMP(u.user_registered) as joindate, mu.membership_id, mu.initial_payment, mu.billing_amount, mu.cycle_period, mu.cycle_number, mu.billing_limit, mu.trial_amount, mu.trial_limit, UNIX_TIMESTAMP(mu.startdate) as startdate, UNIX_TIMESTAMP(mu.enddate) as enddate, m.name as membership, um2.meta_value as role, um3.meta_value as org, um4.meta_value as school FROM $wpdb->users u LEFT JOIN $wpdb->pmpro_memberships_users mu ON u.ID = mu.user_id LEFT JOIN $wpdb->pmpro_membership_levels m ON mu.membership_id = m.id ";
 
-		if ( ! empty( $status ) && $status != 'all' ) {
-			$sqlQuery .= "LEFT JOIN $wpdb->usermeta um ON um.user_id = u.ID AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id) ";
-		}
+        if ( ! empty( $status ) && $status != 'all' ) {
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um ON um.user_id = u.ID AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id) ";
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um2 ON um2.user_id = u.ID AND um2.meta_key = 'frogstreet_titleRole'";
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um3 ON um3.user_id = u.ID AND um3.meta_key = 'frogstreet_district'";
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um4 ON um4.user_id = u.ID AND um4.meta_key = 'frogstreet_school'";
+        }
 
 		$sqlQuery .= "WHERE mu.status = 'active' AND mu.membership_id > 0 ";
 
@@ -832,7 +835,7 @@ class PMPro_Approvals {
 		if ( ! empty( $status ) && $status != 'all' ) {
 			$sqlQuery .= "AND um.meta_value LIKE '%\"" . esc_sql( $status ) . "\"%' ";
 		}
-
+        //duplicate group ID
 		//$sqlQuery .= "GROUP BY u.ID ";
 
 		if ( $sortby == 'pmpro_approval' ) {
@@ -1131,7 +1134,7 @@ class PMPro_Approvals {
 	/**
 	 * Custom confirmation message for levels that requires approval.
 	 */
-	public static function pmpro_confirmation_message( $confirmation_message ) {
+	public static function pmpro_confirmation_message( $confirmation_message, $pmpro_invoice ) {
 
 		global $current_user;
 
@@ -1152,6 +1155,12 @@ class PMPro_Approvals {
 		}
 
 		$confirmation_message = '<p>' . sprintf( __( 'Thank you for your membership to %1$s. Your %2$s membership status is: <b>%3$s</b>.', 'pmpro-approvals' ), get_bloginfo( 'name' ), $current_user->membership_level->name, $approval_status ) . '</p>';
+
+		// Check instructions
+		if ( ! empty( $pmpro_invoice ) && $pmpro_invoice->gateway == "check" && ! pmpro_isLevelFree( $pmpro_invoice->membership_level ) ) {
+			$confirmation_message .= '<div class="pmpro_payment_instructions">' . wpautop( wp_unslash( pmpro_getOption("instructions") ) ) . '</div>';
+		}
+
 
 		$confirmation_message .= '<p>' . sprintf( __( 'Below are details about your membership account and a receipt for your initial membership invoice. A welcome email with a copy of your initial membership invoice has been sent to %s.', 'pmpro-approvals' ), $current_user->user_email ) . '</p>';
 
