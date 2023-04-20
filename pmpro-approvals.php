@@ -811,13 +811,14 @@ class PMPro_Approvals {
 		$end   = $pn * $limit;
 		$start = $end - $limit;
 
-        $sqlQuery = "SELECT SQL_CALC_FOUND_ROWS u.ID, u.user_login, u.user_email, UNIX_TIMESTAMP(u.user_registered) as joindate, mu.membership_id, mu.initial_payment, mu.billing_amount, mu.cycle_period, mu.cycle_number, mu.billing_limit, mu.trial_amount, mu.trial_limit, UNIX_TIMESTAMP(mu.startdate) as startdate, UNIX_TIMESTAMP(mu.enddate) as enddate, m.name as membership, um2.meta_value as role, um3.meta_value as org FROM $wpdb->users u LEFT JOIN $wpdb->pmpro_memberships_users mu ON u.ID = mu.user_id LEFT JOIN $wpdb->pmpro_membership_levels m ON mu.membership_id = m.id ";
+        $sqlQuery = "SELECT SQL_CALC_FOUND_ROWS u.ID, u.user_login, u.user_email, UNIX_TIMESTAMP(u.user_registered) as joindate, mu.membership_id, mu.initial_payment, mu.billing_amount, mu.cycle_period, mu.cycle_number, mu.billing_limit, mu.trial_amount, mu.trial_limit, UNIX_TIMESTAMP(mu.startdate) as startdate, UNIX_TIMESTAMP(mu.enddate) as enddate, m.name as membership, um2.meta_value as role, um3.meta_value as org, um4.meta_value as school FROM $wpdb->users u LEFT JOIN $wpdb->pmpro_memberships_users mu ON u.ID = mu.user_id LEFT JOIN $wpdb->pmpro_membership_levels m ON mu.membership_id = m.id ";
 
-		if ( ! empty( $status ) && $status != 'all' ) {
-			$sqlQuery .= "LEFT JOIN $wpdb->usermeta um ON um.user_id = u.ID AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id) ";
+        if ( ! empty( $status ) && $status != 'all' ) {
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um ON um.user_id = u.ID AND um.meta_key LIKE CONCAT('pmpro_approval_', mu.membership_id) ";
             $sqlQuery .= "LEFT JOIN $wpdb->usermeta um2 ON um2.user_id = u.ID AND um2.meta_key = 'frogstreet_titleRole'";
             $sqlQuery .= "LEFT JOIN $wpdb->usermeta um3 ON um3.user_id = u.ID AND um3.meta_key = 'frogstreet_district'";
-		}
+            $sqlQuery .= "LEFT JOIN $wpdb->usermeta um4 ON um4.user_id = u.ID AND um4.meta_key = 'frogstreet_school'";
+        }
 
 		$sqlQuery .= "WHERE mu.status = 'active' AND mu.membership_id > 0 ";
 
@@ -834,7 +835,7 @@ class PMPro_Approvals {
 		if ( ! empty( $status ) && $status != 'all' ) {
 			$sqlQuery .= "AND um.meta_value LIKE '%\"" . esc_sql( $status ) . "\"%' ";
 		}
-
+        //duplicate group ID
 		//$sqlQuery .= "GROUP BY u.ID ";
 
 		if ( $sortby == 'pmpro_approval' ) {
